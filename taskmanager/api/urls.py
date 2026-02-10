@@ -15,7 +15,7 @@ def api_home(request):
 
 
 urlpatterns = [
-    # 👇 API root
+    # API root
     path("", api_home),
 
     # Auth
