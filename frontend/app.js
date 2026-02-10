@@ -1,6 +1,6 @@
 
 
-const API_BASE = "https://arjundev2003.pythonanywhere.com/api/";
+const API_BASE = "https://arjundev2003.pythonanywhere.com/api";
 
 
 // ================= PROTECT ROUTES =================

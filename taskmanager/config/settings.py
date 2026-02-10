@@ -26,6 +26,7 @@ SECRET_KEY = 'django-insecure-i7=xdj@$&%s&d2pj9pywfnl62pme+6q3$!ghxp_x%8(z3u2*=p
 DEBUG = True
 
 ALLOWED_HOSTS = ['arjundev2003.pythonanywhere.com']
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 
