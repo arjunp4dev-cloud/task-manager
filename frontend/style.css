@@ -1,0 +1,153 @@
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --accent: #2b7cff;
+  --muted: #6b7280;
+  --column-bg: #eef2f7;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #111;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 16px;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  background: var(--card);
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(12, 15, 20, .08);
+}
+
+input {
+  display: block;
+  width: 260px;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.primary {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  padding: 14px 18px;
+  border-radius: 999px;
+  font-weight: bold;
+}
+
+.muted,
+a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+
+.list li {
+  padding: 12px;
+  border: 1px solid #eee;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.list li:hover {
+  background: #f0f5ff;
+}
+
+.board-columns {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.column {
+  flex: 1;
+  background: var(--column-bg);
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.column h2 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.tasks {
+  min-height: 250px;
+}
+
+.task {
+  background: #fff;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
+  cursor: grab;
+  transition: 0.15s ease;
+}
+
+.task:hover {
+  transform: scale(1.02);
+}
+
+.task:active {
+  cursor: grabbing;
+}
+@media (max-width: 768px) {
+
+  .board {
+    flex-direction: column;
+  }
+
+  .column {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+}

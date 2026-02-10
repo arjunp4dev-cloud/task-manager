@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Projects — Task Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container projects">
+
+    <header class="row">
+      <h1>Projects</h1>
+      <div>
+        <span id="user"></span>
+        <button onclick="logout()" class="muted">Logout</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <input id="newProjectName" placeholder="New Project Name">
+      <button id="createProjectBtn" class="primary">
+  Create Project
+</button>
+
+    </div>
+
+    <ul id="projectsList" class="list card"></ul>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
