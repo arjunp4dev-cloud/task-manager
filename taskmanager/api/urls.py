@@ -7,8 +7,17 @@ from .views import (
     TaskListCreateView,
     TaskDetailView
 )
+from django.http import JsonResponse
+
+
+def api_home(request):
+    return JsonResponse({"message": "API Root Working"})
+
 
 urlpatterns = [
+    # 👇 API root
+    path("", api_home),
+
     # Auth
     path('register/', RegisterView.as_view()),
     path('login/', TokenObtainPairView.as_view()),
