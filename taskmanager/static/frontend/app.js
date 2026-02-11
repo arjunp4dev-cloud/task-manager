@@ -281,24 +281,35 @@ async function deleteTask(taskId) {
 
 async function editTask(taskId) {
 
+  const projectId = new URLSearchParams(window.location.search).get("project");
+
   const newTitle = prompt("New Title:");
-  let newStatus = prompt("Status (Todo / In Progress / Done):");
+  if (newTitle === null) return;
 
-  if (!newTitle || !newStatus) {
-    alert("Title and Status required");
-    return;
-  }
+  const newDescription = prompt("New Description (leave empty if none):");
+  if (newDescription === null) return;
 
-  // 🔥 FIX: Normalize status input
-  newStatus = newStatus.trim().toLowerCase();
+  const newStatusInput = prompt("Status (Todo / In Progress / Done):");
+  if (newStatusInput === null) return;
+
+  let newStatus = newStatusInput.trim().toLowerCase();
 
   if (newStatus === "todo") newStatus = "Todo";
   else if (newStatus === "in progress") newStatus = "In Progress";
   else if (newStatus === "done") newStatus = "Done";
   else {
-    alert("Invalid status. Use: Todo, In Progress, or Done");
+    alert("Invalid status. Use: Todo / In Progress / Done");
     return;
   }
+
+  const newPriorityInput = prompt("Priority (Low / Medium / High or leave empty):");
+  if (newPriorityInput === null) return;
+
+  let newPriority = newPriorityInput.trim();
+  if (newPriority === "") newPriority = null;
+
+  const newDueDate = prompt("Due Date (YYYY-MM-DD or leave empty):");
+  if (newDueDate === null) return;
 
   await fetch(`${API_BASE}/tasks/${taskId}/`, {
     method: "PATCH",
@@ -308,10 +319,12 @@ async function editTask(taskId) {
     },
     body: JSON.stringify({
       title: newTitle,
-      status: newStatus
+      description: newDescription,
+      status: newStatus,
+      priority: newPriority,
+      due_date: newDueDate || null
     })
   });
 
-  const projectId = new URLSearchParams(window.location.search).get("project");
   loadTasks(projectId);
 }
