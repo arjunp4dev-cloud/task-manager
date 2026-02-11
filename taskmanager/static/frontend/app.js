@@ -20,18 +20,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("reg_email").value;
       const password = document.getElementById("reg_password").value;
 
-      const res = await fetch(`${API_BASE}/register/`, {
+      await fetch(`${API_BASE}/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password })
       });
 
-      if (res.ok) {
-        alert("Registration successful!");
-        window.location.href = "/login/";
-      } else {
-        alert("Registration failed");
-      }
+      window.location.href = "/login/";
     });
   }
 
@@ -64,62 +59,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-// ================= PROJECTS =================
-
-if (currentPath === "/projects/") {
-  loadProjects();
-}
-
-async function loadProjects() {
-  const res = await fetch(`${API_BASE}/projects/`, {
-    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
-  });
-
-  const projects = await res.json();
-  const list = document.getElementById("projectsList");
-
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  projects.forEach(project => {
-    list.innerHTML += `
-      <li>
-        <strong>${project.name}</strong>
-        <button onclick="openProject(${project.id})">Open</button>
-        <button onclick="deleteProject(${project.id})">Delete</button>
-      </li>
-    `;
-  });
-}
-
-async function deleteProject(id) {
-  await fetch(`${API_BASE}/projects/${id}/`, {
-    method: "DELETE",
-    headers: {
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    }
-  });
-  loadProjects();
-}
-
-function openProject(id) {
-  window.location.href = `/board/?project=${id}`;
-}
-
-function logout() {
-  localStorage.clear();
-  window.location.href = "/login/";
-}
-
 // ================= BOARD =================
 
 if (currentPath === "/board/") {
   const projectId = new URLSearchParams(window.location.search).get("project");
-
-  if (!projectId) {
-    window.location.href = "/projects/";
-  } else {
+  if (projectId) {
     loadProjectTitle(projectId);
     loadTasks(projectId);
   }
@@ -130,15 +74,24 @@ function toggleTaskForm() {
   form.style.display = form.style.display === "none" ? "block" : "none";
 }
 
+// ================= APPLY FILTER =================
+
+function applyFilters() {
+  const projectId = new URLSearchParams(window.location.search).get("project");
+  loadTasks(projectId);
+}
+
+// ================= CREATE TASK =================
+
 async function submitTask() {
 
   const projectId = new URLSearchParams(window.location.search).get("project");
 
   const title = document.getElementById("taskTitle").value;
   const description = document.getElementById("taskDescription").value;
+  const status = document.getElementById("taskStatus").value;
   const priority = document.getElementById("taskPriority").value;
   const due_date = document.getElementById("taskDueDate").value;
-  const status = document.getElementById("taskStatus").value;
 
   if (!title) {
     alert("Task title required");
@@ -154,9 +107,9 @@ async function submitTask() {
     body: JSON.stringify({
       title,
       description,
+      status,
       priority,
-      due_date,
-      status
+      due_date
     })
   });
 
@@ -164,22 +117,40 @@ async function submitTask() {
   loadTasks(projectId);
 }
 
-async function loadProjectTitle(projectId) {
-  const res = await fetch(`${API_BASE}/projects/${projectId}/`, {
-    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
-  });
-
-  const project = await res.json();
-  document.getElementById("projectTitle").innerText = project.name;
-}
+// ================= LOAD TASKS WITH FILTER =================
 
 async function loadTasks(projectId) {
+
+  const searchValue = document.getElementById("searchInput")?.value.toLowerCase() || "";
+  const statusFilter = document.getElementById("statusFilter")?.value || "";
+  const sortValue = document.getElementById("sortSelect")?.value || "";
 
   const res = await fetch(`${API_BASE}/projects/${projectId}/tasks/`, {
     headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
   });
 
-  const tasks = await res.json();
+  let tasks = await res.json();
+
+  // 🔎 SEARCH
+  if (searchValue) {
+    tasks = tasks.filter(task =>
+      task.title.toLowerCase().includes(searchValue)
+    );
+  }
+
+  // 🎯 STATUS FILTER
+  if (statusFilter) {
+    tasks = tasks.filter(task => task.status === statusFilter);
+  }
+
+  // 🔄 SORT
+  if (sortValue) {
+    tasks.sort((a, b) => {
+      if (!a[sortValue]) return 1;
+      if (!b[sortValue]) return -1;
+      return new Date(a[sortValue]) - new Date(b[sortValue]);
+    });
+  }
 
   const todo = document.getElementById("todo");
   const inprogress = document.getElementById("inprogress");
@@ -210,16 +181,25 @@ async function loadTasks(projectId) {
   });
 }
 
-// ================= FULL EDIT =================
-async function editTask(taskId) {
+// ================= DELETE =================
 
+async function deleteTask(taskId) {
   const projectId = new URLSearchParams(window.location.search).get("project");
 
+  await fetch(`${API_BASE}/tasks/${taskId}/`, {
+    method: "DELETE",
+    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
+  });
+
+  loadTasks(projectId);
+}
+
+// ================= EDIT =================
+
+async function editTask(taskId) {
+
   const newTitle = prompt("New Title:");
-  const newDescription = prompt("New Description:");
-  const newPriority = prompt("Priority (Low/Medium/High):");
-  const newDue = prompt("Due Date (YYYY-MM-DD):");
-  const newStatus = prompt("Status (Todo/In Progress/Done):");
+  const newStatus = prompt("Status (Todo / In Progress / Done):");
 
   await fetch(`${API_BASE}/tasks/${taskId}/`, {
     method: "PATCH",
@@ -229,29 +209,19 @@ async function editTask(taskId) {
     },
     body: JSON.stringify({
       title: newTitle,
-      description: newDescription,
-      priority: newPriority,
-      due_date: newDue,
       status: newStatus
     })
   });
 
+  const projectId = new URLSearchParams(window.location.search).get("project");
   loadTasks(projectId);
 }
 
-// ================= DELETE =================
-async function deleteTask(taskId) {
-
-  const projectId = new URLSearchParams(window.location.search).get("project");
-
-  if (!confirm("Delete this task?")) return;
-
-  await fetch(`${API_BASE}/tasks/${taskId}/`, {
-    method: "DELETE",
-    headers: {
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    }
+async function loadProjectTitle(projectId) {
+  const res = await fetch(`${API_BASE}/projects/${projectId}/`, {
+    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
   });
 
-  loadTasks(projectId);
+  const project = await res.json();
+  document.getElementById("projectTitle").innerText = project.name;
 }
