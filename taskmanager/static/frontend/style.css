@@ -75,12 +75,15 @@ button.small {
 /* Floating Add Task Button */
 .primary {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
-  padding: 14px 18px;
-  border-radius: 50px;
+  right: 16px;
+  bottom: 80px;   /* ⬅️ moved up for mobile visibility */
+  padding: 16px 20px;
+  border-radius: 999px;
   font-weight: bold;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  z-index: 1000;
 }
+
 
 /* ================= PROJECT LIST ================= */
 
