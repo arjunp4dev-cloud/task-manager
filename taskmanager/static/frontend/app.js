@@ -167,6 +167,15 @@ async function submitTask() {
   const status = document.getElementById("taskStatus").value;
   const priority = document.getElementById("taskPriority").value;
   const due_date = document.getElementById("taskDueDate").value;
+  // 🚨 Prevent past dates
+if (due_date) {
+  const today = new Date().toISOString().split("T")[0];
+  if (due_date < today) {
+    alert("Due date cannot be in the past!");
+    return;
+  }
+}
+
 
   if (!title) {
     alert("Task title required");
@@ -309,6 +318,15 @@ async function editTask(taskId) {
   if (newPriority === "") newPriority = null;
 
   const newDueDate = prompt("Due Date (YYYY-MM-DD or leave empty):");
+  // 🚨 Prevent past dates
+if (newDueDate) {
+  const today = new Date().toISOString().split("T")[0];
+  if (newDueDate < today) {
+    alert("Due date cannot be in the past!");
+    return;
+  }
+}
+
   if (newDueDate === null) return;
 
   await fetch(`${API_BASE}/tasks/${taskId}/`, {
