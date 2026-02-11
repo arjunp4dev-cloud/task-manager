@@ -11,7 +11,7 @@ if (currentPath !== "/login/" && currentPath !== "/register/") {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // REGISTER
+  // ================= REGISTER =================
   const registerForm = document.getElementById("registerForm");
   if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // LOGIN
+  // ================= LOGIN =================
   const loginForm = document.getElementById("loginForm");
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
@@ -61,6 +61,24 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Invalid credentials");
       }
     });
+  }
+
+  // ================= BOARD PAGE INIT =================
+  if (currentPath === "/board/") {
+    const projectId = new URLSearchParams(window.location.search).get("project");
+
+    if (!projectId) {
+      window.location.href = "/projects/";
+    } else {
+      loadProjectTitle(projectId);
+      loadTasks(projectId);
+    }
+  }
+
+  // Hide form initially
+  const form = document.getElementById("taskForm");
+  if (form) {
+    form.style.display = "none";
   }
 
 });
@@ -103,22 +121,12 @@ function logout() {
   window.location.href = "/login/";
 }
 
-// ================= BOARD =================
-
-if (currentPath === "/board/") {
-
-  const projectId = new URLSearchParams(window.location.search).get("project");
-
-  if (!projectId) {
-    window.location.href = "/projects/";
-  } else {
-    loadProjectTitle(projectId);
-    loadTasks(projectId);
-  }
-}
+// ================= BOARD FUNCTIONS =================
 
 function toggleTaskForm() {
   const form = document.getElementById("taskForm");
+  if (!form) return;
+
   form.style.display = form.style.display === "none" ? "block" : "none";
 }
 
@@ -126,8 +134,9 @@ async function submitTask() {
 
   const projectId = new URLSearchParams(window.location.search).get("project");
 
-  const title = document.getElementById("taskTitle").value;
-  const description = document.getElementById("taskDescription").value;
+  const title = document.getElementById("taskTitle").value.trim();
+  const description = document.getElementById("taskDescription").value.trim();
+  const status = document.getElementById("taskStatus").value; // ✅ FIXED
   const priority = document.getElementById("taskPriority").value;
   const due_date = document.getElementById("taskDueDate").value;
 
@@ -145,11 +154,18 @@ async function submitTask() {
     body: JSON.stringify({
       title,
       description,
+      status,        // ✅ Now sending selected status
       priority,
-      due_date,
-      status: "Todo"
+      due_date
     })
   });
+
+  // Clear form
+  document.getElementById("taskTitle").value = "";
+  document.getElementById("taskDescription").value = "";
+  document.getElementById("taskPriority").value = "";
+  document.getElementById("taskDueDate").value = "";
+  document.getElementById("taskStatus").value = "Todo";
 
   toggleTaskForm();
   loadTasks(projectId);
@@ -176,6 +192,8 @@ async function loadTasks(projectId) {
   const inprogress = document.getElementById("inprogress");
   const done = document.getElementById("done");
 
+  if (!todo) return;
+
   todo.innerHTML = "";
   inprogress.innerHTML = "";
   done.innerHTML = "";
@@ -183,19 +201,21 @@ async function loadTasks(projectId) {
   tasks.forEach(task => {
 
     const card = document.createElement("div");
-    card.style.border = "1px solid #ccc";
-    card.style.padding = "10px";
-    card.style.marginBottom = "10px";
+    card.className = "task";
 
     card.innerHTML = `
       <strong>${task.title}</strong><br>
       ${task.description || ""}<br>
-      Priority: ${task.priority || "None"}<br>
-      Due: ${task.due_date || "No date"}
+      <small>Priority: ${task.priority || "None"}</small><br>
+      <small>Due: ${task.due_date || "No date"}</small>
     `;
 
-    if (task.status === "Todo") todo.appendChild(card);
-    if (task.status === "In Progress") inprogress.appendChild(card);
-    if (task.status === "Done") done.appendChild(card);
+    if (task.status === "Todo") {
+      todo.appendChild(card);
+    } else if (task.status === "In Progress") {
+      inprogress.appendChild(card);
+    } else if (task.status === "Done") {
+      done.appendChild(card);
+    }
   });
 }
