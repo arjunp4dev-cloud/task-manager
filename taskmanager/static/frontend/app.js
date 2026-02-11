@@ -32,12 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ username, email, password })
       });
 
-      const data = await res.json();
-
       if (res.ok) {
         alert("Registration successful!");
         window.location.href = "/login/";
       } else {
+        const data = await res.json();
         alert(JSON.stringify(data));
       }
     });
@@ -64,7 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (res.ok) {
         localStorage.setItem("access", data.access);
         localStorage.setItem("refresh", data.refresh);
-        alert("Login successful!");
         window.location.href = "/projects/";
       } else {
         alert("Invalid username or password");
@@ -87,38 +85,21 @@ if (currentPath === "/projects/") {
 async function loadProjects() {
   const token = localStorage.getItem("access");
 
-  if (!token) {
-    window.location.href = "/login/";
-    return;
-  }
-
   const res = await fetch(`${API_BASE}/projects/`, {
-    headers: {
-      "Authorization": "Bearer " + token
-    }
+    headers: { "Authorization": "Bearer " + token }
   });
-
-  if (!res.ok) {
-    window.location.href = "/login/";
-    return;
-  }
 
   const projects = await res.json();
   const projectsList = document.getElementById("projectsList");
-
   projectsList.innerHTML = "";
 
   projects.forEach(project => {
     const li = document.createElement("li");
-
     li.innerHTML = `
       <strong>${project.name}</strong>
-      <div>
-        <button onclick="openProject(${project.id})">Open</button>
-        <button onclick="deleteProject(${project.id})">Delete</button>
-      </div>
+      <button onclick="openProject(${project.id})">Open</button>
+      <button onclick="deleteProject(${project.id})">Delete</button>
     `;
-
     projectsList.appendChild(li);
   });
 }
@@ -132,7 +113,7 @@ async function createProject() {
     return;
   }
 
-  const res = await fetch(`${API_BASE}/projects/`, {
+  await fetch(`${API_BASE}/projects/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -141,20 +122,14 @@ async function createProject() {
     body: JSON.stringify({ name })
   });
 
-  if (res.ok) {
-    nameInput.value = "";
-    loadProjects();
-  } else {
-    alert("Failed to create project");
-  }
+  nameInput.value = "";
+  loadProjects();
 }
 
 async function deleteProject(id) {
   await fetch(`${API_BASE}/projects/${id}/`, {
     method: "DELETE",
-    headers: {
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    }
+    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
   });
 
   loadProjects();
@@ -182,34 +157,40 @@ if (currentPath === "/board/") {
     loadProjectTitle(projectId);
     loadTasks(projectId);
   }
-
-  const addTaskBtn = document.getElementById("addTaskBtn");
-  if (addTaskBtn) {
-    addTaskBtn.addEventListener("click", () => addTask(projectId));
-  }
 }
 
 async function loadProjectTitle(projectId) {
   const res = await fetch(`${API_BASE}/projects/${projectId}/`, {
-    headers: {
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    }
+    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
   });
 
-  if (res.ok) {
-    const project = await res.json();
-    document.getElementById("projectTitle").innerText = project.name;
-  }
+  const project = await res.json();
+  document.getElementById("projectTitle").innerText = project.name;
 }
 
-async function loadTasks(projectId) {
-  const res = await fetch(`${API_BASE}/projects/${projectId}/tasks/`, {
-    headers: {
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    }
-  });
+// ================= FILTER APPLY =================
+function applyFilters() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const projectId = urlParams.get("project");
+  loadTasks(projectId);
+}
 
-  if (!res.ok) return;
+// ================= LOAD TASKS =================
+async function loadTasks(projectId) {
+
+  const search = document.getElementById("searchInput")?.value || "";
+  const status = document.getElementById("statusFilter")?.value || "";
+  const sort = document.getElementById("sortSelect")?.value || "";
+
+  let url = `${API_BASE}/projects/${projectId}/tasks/?`;
+
+  if (search) url += `search=${search}&`;
+  if (status) url += `status=${status}&`;
+  if (sort) url += `sort=${sort}&`;
+
+  const res = await fetch(url, {
+    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
+  });
 
   const tasks = await res.json();
 
@@ -222,18 +203,52 @@ async function loadTasks(projectId) {
   done.innerHTML = "";
 
   tasks.forEach(task => {
+
     const div = document.createElement("div");
-    div.innerHTML = `<strong>${task.title}</strong>`;
+    div.style.border = "1px solid #ccc";
+    div.style.padding = "10px";
+    div.style.marginBottom = "10px";
+
+    div.innerHTML = `
+      <strong>${task.title}</strong><br>
+      ${task.description || ""}<br>
+      Priority: ${task.priority || "-"}<br>
+      Due: ${task.due_date || "-"}<br><br>
+
+      <select onchange="updateStatus(${task.id}, this.value)">
+        <option value="Todo" ${task.status === "Todo" ? "selected" : ""}>Todo</option>
+        <option value="In Progress" ${task.status === "In Progress" ? "selected" : ""}>In Progress</option>
+        <option value="Done" ${task.status === "Done" ? "selected" : ""}>Done</option>
+      </select>
+    `;
 
     if (task.status === "Todo") todo.appendChild(div);
     if (task.status === "In Progress") inprogress.appendChild(div);
     if (task.status === "Done") done.appendChild(div);
+
   });
 }
 
-async function addTask(projectId) {
-  const title = prompt("Task Title:");
-  if (!title) return;
+// ================= TASK FORM =================
+function toggleTaskForm() {
+  const form = document.getElementById("taskForm");
+  form.style.display = form.style.display === "none" ? "block" : "none";
+}
+
+async function submitTask() {
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const projectId = urlParams.get("project");
+
+  const title = document.getElementById("taskTitle").value;
+  const description = document.getElementById("taskDescription").value;
+  const priority = document.getElementById("taskPriority").value;
+  const due_date = document.getElementById("taskDueDate").value;
+
+  if (!title) {
+    alert("Task title required");
+    return;
+  }
 
   await fetch(`${API_BASE}/projects/${projectId}/tasks/`, {
     method: "POST",
@@ -243,8 +258,30 @@ async function addTask(projectId) {
     },
     body: JSON.stringify({
       title,
+      description,
+      priority,
+      due_date,
       status: "Todo"
     })
+  });
+
+  document.getElementById("taskForm").style.display = "none";
+  loadTasks(projectId);
+}
+
+// ================= UPDATE STATUS =================
+async function updateStatus(taskId, newStatus) {
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const projectId = urlParams.get("project");
+
+  await fetch(`${API_BASE}/projects/${projectId}/tasks/${taskId}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    },
+    body: JSON.stringify({ status: newStatus })
   });
 
   loadTasks(projectId);

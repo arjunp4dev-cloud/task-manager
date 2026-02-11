@@ -11,8 +11,12 @@
 
 <a href="/projects/">Back</a>
 
+<hr>
+
+<!-- 🔍 FILTER / SEARCH / SORT -->
 <div>
   <input type="text" id="searchInput" placeholder="Search by title">
+
   <select id="statusFilter">
     <option value="">All</option>
     <option value="Todo">Todo</option>
@@ -26,21 +30,53 @@
     <option value="created_at">Created Date</option>
   </select>
 
-  <button onclick="loadTasks(new URLSearchParams(window.location.search).get('project'))">
-    Apply
-  </button>
+  <button onclick="applyFilters()">Apply</button>
 </div>
 
-<h3>To Do</h3>
-<div id="todo"></div>
+<hr>
 
-<h3>In Progress</h3>
-<div id="inprogress"></div>
+<!-- 📌 TASK CREATION FORM -->
+<div id="taskForm" style="display:none; margin-bottom:20px;">
 
-<h3>Done</h3>
-<div id="done"></div>
+  <input type="text" id="taskTitle" placeholder="Task Title" required>
 
-<button id="addTaskBtn">+ Task</button>
+  <textarea id="taskDescription" placeholder="Task Description"></textarea>
+
+  <select id="taskPriority">
+    <option value="">Priority</option>
+    <option value="Low">Low</option>
+    <option value="Medium">Medium</option>
+    <option value="High">High</option>
+  </select>
+
+  <input type="date" id="taskDueDate">
+
+  <button onclick="submitTask()">Save Task</button>
+</div>
+
+<button onclick="toggleTaskForm()">+ Task</button>
+
+<hr>
+
+<!-- 🗂 BOARD COLUMNS -->
+<div style="display:flex; gap:30px; margin-top:20px;">
+
+  <div>
+    <h3>Todo</h3>
+    <div id="todo"></div>
+  </div>
+
+  <div>
+    <h3>In Progress</h3>
+    <div id="inprogress"></div>
+  </div>
+
+  <div>
+    <h3>Done</h3>
+    <div id="done"></div>
+  </div>
+
+</div>
 
 <script src="{% static 'frontend/app.js' %}"></script>
 
