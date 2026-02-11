@@ -1,36 +1,21 @@
 {% load static %}
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Projects — Task Manager</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Projects</title>
+  <link rel="stylesheet" href="{% static 'frontend/style.css' %}">
 </head>
 <body>
 
-  <div class="container projects">
+<h2>Projects</h2>
 
-    <header class="row">
-      <h1>Projects</h1>
-      <div>
-        <span id="user"></span>
-        <button onclick="logout()" class="muted">Logout</button>
-      </div>
-    </header>
+<button onclick="logout()">Logout</button>
 
-    <div class="card">
-      <input id="newProjectName" placeholder="New Project Name">
-      <button id="createProjectBtn" class="primary">
-  Create Project
-</button>
+<input type="text" id="newProjectName" placeholder="New Project Name">
+<button id="createProjectBtn">Create Project</button>
 
-    </div>
+<ul id="projectsList"></ul>
 
-    <ul id="projectsList" class="list card"></ul>
-
-  </div>
-
-  <script src="app.js"></script>
+<script src="{% static 'frontend/app.js' %}"></script>
 </body>
 </html>
