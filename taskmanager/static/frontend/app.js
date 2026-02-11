@@ -282,7 +282,23 @@ async function deleteTask(taskId) {
 async function editTask(taskId) {
 
   const newTitle = prompt("New Title:");
-  const newStatus = prompt("Status (Todo / In Progress / Done):");
+  let newStatus = prompt("Status (Todo / In Progress / Done):");
+
+  if (!newTitle || !newStatus) {
+    alert("Title and Status required");
+    return;
+  }
+
+  // 🔥 FIX: Normalize status input
+  newStatus = newStatus.trim().toLowerCase();
+
+  if (newStatus === "todo") newStatus = "Todo";
+  else if (newStatus === "in progress") newStatus = "In Progress";
+  else if (newStatus === "done") newStatus = "Done";
+  else {
+    alert("Invalid status. Use: Todo, In Progress, or Done");
+    return;
+  }
 
   await fetch(`${API_BASE}/tasks/${taskId}/`, {
     method: "PATCH",
