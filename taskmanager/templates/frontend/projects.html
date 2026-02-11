@@ -7,15 +7,23 @@
 </head>
 <body>
 
-<h2>Projects</h2>
+<div class="container">
 
-<button onclick="logout()">Logout</button>
+  <div class="row">
+    <h1>Projects</h1>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-<input type="text" id="newProjectName" placeholder="New Project Name">
-<button id="createProjectBtn">Create Project</button>
+  <div class="card" style="margin-top:20px;">
+    <input type="text" id="newProjectName" placeholder="New Project Name">
+    <button id="createProjectBtn" style="margin-top:10px;">Create Project</button>
+  </div>
 
-<ul id="projectsList"></ul>
+  <ul id="projectsList" class="project-list"></ul>
+
+</div>
 
 <script src="{% static 'frontend/app.js' %}"></script>
+
 </body>
 </html>

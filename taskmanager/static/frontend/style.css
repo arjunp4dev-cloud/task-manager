@@ -151,3 +151,50 @@ a {
   }
 
 }
+/* ================= PROJECT PAGE IMPROVEMENT ================= */
+
+.project-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.project-list li {
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.2s ease;
+}
+
+.project-list li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.project-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.project-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.project-actions button {
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+.project-actions .delete-btn {
+  background: #e53935;
+}
+
+.project-actions .delete-btn:hover {
+  background: #d32f2f;
+}

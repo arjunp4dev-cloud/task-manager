@@ -95,14 +95,18 @@ async function loadProjects() {
   list.innerHTML = "";
 
   projects.forEach(project => {
-    list.innerHTML += `
-      <li>
-        <strong>${project.name}</strong>
+  list.innerHTML += `
+    <li>
+      <div class="project-name">${project.name}</div>
+
+      <div class="project-actions">
         <button onclick="openProject(${project.id})">Open</button>
-        <button onclick="deleteProject(${project.id})">Delete</button>
-      </li>
-    `;
-  });
+        <button class="delete-btn" onclick="deleteProject(${project.id})">Delete</button>
+      </div>
+    </li>
+  `;
+});
+
 }
 
 async function createProject() {
