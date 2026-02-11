@@ -1,11 +1,13 @@
 const API_BASE = "https://arjundev2003.pythonanywhere.com/api";
 
+// ================= CURRENT PAGE =================
 const currentPath = window.location.pathname;
-const projectsList = document.getElementById("projectsList");
 
 // ================= PROTECT ROUTES =================
-
-if (!currentPath.includes("/login") && !currentPath.includes("/register")) {
+if (
+  currentPath !== "/login/" &&
+  currentPath !== "/register/"
+) {
   if (!localStorage.getItem("access")) {
     window.location.href = "/login/";
   }
@@ -70,29 +72,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ================= PROJECTS PAGE =================
-
-  if (currentPath.includes("/projects/")) {
-    loadProjects();
-  }
-
-  // ================= BOARD PAGE =================
-
-  if (currentPath.includes("/board/")) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectId = urlParams.get("project");
-
-    if (!projectId) {
-      window.location.href = "/projects/";
-      return;
-    }
-
-    loadTasks(projectId);
-  }
-
 });
 
-// ================= PROJECT FUNCTIONS =================
+// ================= PROJECTS PAGE =================
+if (currentPath === "/projects/") {
+  loadProjects();
+
+  const createBtn = document.getElementById("createProjectBtn");
+  if (createBtn) {
+    createBtn.addEventListener("click", createProject);
+  }
+}
 
 async function loadProjects() {
   const token = localStorage.getItem("access");
@@ -103,7 +93,9 @@ async function loadProjects() {
   }
 
   const res = await fetch(`${API_BASE}/projects/`, {
-    headers: { "Authorization": "Bearer " + token }
+    headers: {
+      "Authorization": "Bearer " + token
+    }
   });
 
   if (!res.ok) {
@@ -112,6 +104,8 @@ async function loadProjects() {
   }
 
   const projects = await res.json();
+  const projectsList = document.getElementById("projectsList");
+
   projectsList.innerHTML = "";
 
   projects.forEach(project => {
@@ -129,8 +123,30 @@ async function loadProjects() {
   });
 }
 
-function openProject(id) {
-  window.location.href = `/board/?project=${id}`;
+async function createProject() {
+  const nameInput = document.getElementById("newProjectName");
+  const name = nameInput.value.trim();
+
+  if (!name) {
+    alert("Project name required");
+    return;
+  }
+
+  const res = await fetch(`${API_BASE}/projects/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    },
+    body: JSON.stringify({ name })
+  });
+
+  if (res.ok) {
+    nameInput.value = "";
+    loadProjects();
+  } else {
+    alert("Failed to create project");
+  }
 }
 
 async function deleteProject(id) {
@@ -144,7 +160,47 @@ async function deleteProject(id) {
   loadProjects();
 }
 
-// ================= TASK FUNCTIONS =================
+function openProject(id) {
+  window.location.href = `/board/?project=${id}`;
+}
+
+function logout() {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+  window.location.href = "/login/";
+}
+
+// ================= BOARD PAGE =================
+if (currentPath === "/board/") {
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const projectId = urlParams.get("project");
+
+  if (!projectId) {
+    window.location.href = "/projects/";
+  } else {
+    loadProjectTitle(projectId);
+    loadTasks(projectId);
+  }
+
+  const addTaskBtn = document.getElementById("addTaskBtn");
+  if (addTaskBtn) {
+    addTaskBtn.addEventListener("click", () => addTask(projectId));
+  }
+}
+
+async function loadProjectTitle(projectId) {
+  const res = await fetch(`${API_BASE}/projects/${projectId}/`, {
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    }
+  });
+
+  if (res.ok) {
+    const project = await res.json();
+    document.getElementById("projectTitle").innerText = project.name;
+  }
+}
 
 async function loadTasks(projectId) {
   const res = await fetch(`${API_BASE}/projects/${projectId}/tasks/`, {
@@ -161,35 +217,35 @@ async function loadTasks(projectId) {
   const inprogress = document.getElementById("inprogress");
   const done = document.getElementById("done");
 
-  if (!todo) return;
-
   todo.innerHTML = "";
   inprogress.innerHTML = "";
   done.innerHTML = "";
 
   tasks.forEach(task => {
     const div = document.createElement("div");
-    div.className = "task-card";
-    div.innerHTML = `
-      <h4>${task.title}</h4>
-      <p>${task.description || ""}</p>
-      <p><strong>Status:</strong> ${task.status}</p>
-    `;
+    div.innerHTML = `<strong>${task.title}</strong>`;
 
-    if (task.status === "Todo") {
-      todo.appendChild(div);
-    } else if (task.status === "In Progress") {
-      inprogress.appendChild(div);
-    } else {
-      done.appendChild(div);
-    }
+    if (task.status === "Todo") todo.appendChild(div);
+    if (task.status === "In Progress") inprogress.appendChild(div);
+    if (task.status === "Done") done.appendChild(div);
   });
 }
 
-// ================= LOGOUT =================
+async function addTask(projectId) {
+  const title = prompt("Task Title:");
+  if (!title) return;
 
-function logout() {
-  localStorage.removeItem("access");
-  localStorage.removeItem("refresh");
-  window.location.href = "/login/";
+  await fetch(`${API_BASE}/projects/${projectId}/tasks/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    },
+    body: JSON.stringify({
+      title,
+      status: "Todo"
+    })
+  });
+
+  loadTasks(projectId);
 }
