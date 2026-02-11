@@ -10,7 +10,7 @@ if (currentPath !== "/login/" && currentPath !== "/register/") {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ================= REGISTER =================
+  // REGISTER
   const registerForm = document.getElementById("registerForm");
   if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ================= LOGIN =================
+  // LOGIN
   const loginForm = document.getElementById("loginForm");
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
@@ -200,13 +200,6 @@ async function loadTasks(projectId) {
       Priority: ${task.priority || "None"}<br>
       Due: ${task.due_date || "No date"}<br><br>
 
-      <select onchange="changeStatus(${task.id}, this.value)">
-        <option ${task.status === "Todo" ? "selected" : ""}>Todo</option>
-        <option ${task.status === "In Progress" ? "selected" : ""}>In Progress</option>
-        <option ${task.status === "Done" ? "selected" : ""}>Done</option>
-      </select>
-
-      <br><br>
       <button onclick="editTask(${task.id})">Edit</button>
       <button onclick="deleteTask(${task.id})" style="background:red;">Delete</button>
     `;
@@ -217,30 +210,16 @@ async function loadTasks(projectId) {
   });
 }
 
-// ================= UPDATE STATUS =================
-async function changeStatus(taskId, newStatus) {
-
-  const projectId = new URLSearchParams(window.location.search).get("project");
-
-  await fetch(`${API_BASE}/tasks/${taskId}/`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    },
-    body: JSON.stringify({ status: newStatus })
-  });
-
-  loadTasks(projectId);
-}
-
-// ================= EDIT TASK =================
+// ================= FULL EDIT =================
 async function editTask(taskId) {
 
   const projectId = new URLSearchParams(window.location.search).get("project");
 
   const newTitle = prompt("New Title:");
-  if (!newTitle) return;
+  const newDescription = prompt("New Description:");
+  const newPriority = prompt("Priority (Low/Medium/High):");
+  const newDue = prompt("Due Date (YYYY-MM-DD):");
+  const newStatus = prompt("Status (Todo/In Progress/Done):");
 
   await fetch(`${API_BASE}/tasks/${taskId}/`, {
     method: "PATCH",
@@ -248,13 +227,19 @@ async function editTask(taskId) {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + localStorage.getItem("access")
     },
-    body: JSON.stringify({ title: newTitle })
+    body: JSON.stringify({
+      title: newTitle,
+      description: newDescription,
+      priority: newPriority,
+      due_date: newDue,
+      status: newStatus
+    })
   });
 
   loadTasks(projectId);
 }
 
-// ================= DELETE TASK =================
+// ================= DELETE =================
 async function deleteTask(taskId) {
 
   const projectId = new URLSearchParams(window.location.search).get("project");
