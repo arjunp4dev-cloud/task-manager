@@ -42,6 +42,13 @@
 
   <textarea id="taskDescription" placeholder="Task Description"></textarea>
 
+  <!-- ✅ STATUS DROPDOWN ADDED -->
+  <select id="taskStatus" required>
+    <option value="Todo">Todo</option>
+    <option value="In Progress">In Progress</option>
+    <option value="Done">Done</option>
+  </select>
+
   <select id="taskPriority">
     <option value="">Priority</option>
     <option value="Low">Low</option>
@@ -51,7 +58,10 @@
 
   <input type="date" id="taskDueDate">
 
+  <br><br>
+
   <button onclick="submitTask()">Save Task</button>
+  <button onclick="toggleTaskForm()">Cancel</button>
 </div>
 
 <button onclick="toggleTaskForm()">+ Task</button>
@@ -59,19 +69,19 @@
 <hr>
 
 <!-- 🗂 BOARD COLUMNS -->
-<div style="display:flex; gap:30px; margin-top:20px;">
+<div style="display:flex; gap:40px; margin-top:20px;">
 
-  <div>
+  <div style="width:30%;">
     <h3>Todo</h3>
     <div id="todo"></div>
   </div>
 
-  <div>
+  <div style="width:30%;">
     <h3>In Progress</h3>
     <div id="inprogress"></div>
   </div>
 
-  <div>
+  <div style="width:30%;">
     <h3>Done</h3>
     <div id="done"></div>
   </div>
