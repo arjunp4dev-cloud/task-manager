@@ -53,7 +53,10 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # IMPORTANT
+
+        # ✅ Your templates folder is inside taskmanager
+        'DIRS': [BASE_DIR / 'templates'],
+
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -99,15 +102,15 @@ USE_TZ = True
 
 
 # ================= STATIC FILES =================
+
 STATIC_URL = '/static/'
 
+# ✅ Your static folder is inside taskmanager
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-
 
 
 # ================= CORS =================
@@ -123,7 +126,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
