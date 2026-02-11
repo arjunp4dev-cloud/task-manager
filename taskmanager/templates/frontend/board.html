@@ -1,21 +1,19 @@
+{% load static %}
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Board — Task Manager</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Board</title>
+  <link rel="stylesheet" href="{% static 'frontend/style.css' %}">
 </head>
 <body>
-  <div class="container board">
-    <header class="row">
-      <h1 id="projectTitle">Board</h1>
-      <a href="projects.html">Back</a>
-    </header>
-    <div class="filters">
-  <input id="searchInput" placeholder="Search by title">
 
-  <select id="filterStatus">
+<h2 id="projectTitle">Board</h2>
+
+<a href="/projects/">Back</a>
+
+<div>
+  <input type="text" id="searchInput" placeholder="Search by title">
+  <select id="statusFilter">
     <option value="">All</option>
     <option value="Todo">Todo</option>
     <option value="In Progress">In Progress</option>
@@ -28,26 +26,23 @@
     <option value="created_at">Created Date</option>
   </select>
 
-  <button onclick="loadTasks(projectId)">Apply</button>
+  <button onclick="loadTasks(new URLSearchParams(window.location.search).get('project'))">
+    Apply
+  </button>
 </div>
 
-<div class="board-columns">
-      <div class="column">                      
-        <h2>To Do</h2>
-        <div id="todo" class="tasks"></div>
-      </div>
-      <div class="column">
-        <h2>In Progress</h2>
-        <div id="inprogress" class="tasks"></div>
-      </div>
-      <div class="column">
-        <h2>Done</h2>
-        <div id="done" class="tasks"></div>
-      </div>
-    </div>
+<h3>To Do</h3>
+<div id="todo"></div>
 
-    <button id="addTaskBtn" class="primary">+ Task</button>
-  </div>
-  <script src="app.js"></script>
+<h3>In Progress</h3>
+<div id="inprogress"></div>
+
+<h3>Done</h3>
+<div id="done"></div>
+
+<button id="addTaskBtn">+ Task</button>
+
+<script src="{% static 'frontend/app.js' %}"></script>
+
 </body>
 </html>
