@@ -1,8 +1,9 @@
+{% load static %}
 <!doctype html>
 <html>
 <head>
   <title>Login</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="{% static 'frontend/style.css' %}">
 </head>
 <body>
 
@@ -15,9 +16,11 @@
     <button type="submit">Login</button>
   </form>
 
-  <p>Don't have account? <a href="register.html">Register</a></p>
+  <p>Don't have account? 
+    <a href="{% url 'register_page' %}">Register</a>
+  </p>
 </div>
 
-<script src="app.js"></script>
+<script src="{% static 'frontend/app.js' %}"></script>
 </body>
 </html>
