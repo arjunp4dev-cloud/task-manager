@@ -20,11 +20,11 @@ def board_view(request):
 
 
 urlpatterns = [
-    path("", login_view),
-    path("login/", login_view),
-    path("register/", register_view),
-    path("projects/", projects_view),
-    path("board/", board_view),
+    path("", login_view, name="login_page"),
+    path("login/", login_view, name="login_page"),
+    path("register/", register_view, name="register_page"),
+    path("projects/", projects_view, name="projects_page"),
+    path("board/", board_view, name="board_page"),
 
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
