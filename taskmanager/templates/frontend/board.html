@@ -7,83 +7,86 @@
 </head>
 <body>
 
-<h2 id="projectTitle">Board</h2>
+<div class="container">
 
-<a href="/projects/">Back</a>
-
-<hr>
-
-<!-- 🔍 FILTER / SEARCH / SORT -->
-<div>
-  <input type="text" id="searchInput" placeholder="Search by title">
-
-  <select id="statusFilter">
-    <option value="">All</option>
-    <option value="Todo">Todo</option>
-    <option value="In Progress">In Progress</option>
-    <option value="Done">Done</option>
-  </select>
-
-  <select id="sortSelect">
-    <option value="">Sort</option>
-    <option value="due_date">Due Date</option>
-    <option value="created_at">Created Date</option>
-  </select>
-
-  <button onclick="applyFilters()">Apply</button>
-</div>
-
-<hr>
-
-<!-- 📌 TASK CREATION FORM -->
-<div id="taskForm" style="display:none; margin-bottom:20px;">
-
-  <input type="text" id="taskTitle" placeholder="Task Title" required>
-
-  <textarea id="taskDescription" placeholder="Task Description"></textarea>
-
-  <!-- ✅ STATUS DROPDOWN ADDED -->
-  <select id="taskStatus" required>
-    <option value="Todo">Todo</option>
-    <option value="In Progress">In Progress</option>
-    <option value="Done">Done</option>
-  </select>
-
-  <select id="taskPriority">
-    <option value="">Priority</option>
-    <option value="Low">Low</option>
-    <option value="Medium">Medium</option>
-    <option value="High">High</option>
-  </select>
-
-  <input type="date" id="taskDueDate">
-
-  <br><br>
-
-  <button onclick="submitTask()">Save Task</button>
-  <button onclick="toggleTaskForm()">Cancel</button>
-</div>
-
-<button onclick="toggleTaskForm()">+ Task</button>
-
-<hr>
-
-<!-- 🗂 BOARD COLUMNS -->
-<div style="display:flex; gap:40px; margin-top:20px;">
-
-  <div style="width:30%;">
-    <h3>Todo</h3>
-    <div id="todo"></div>
+  <div class="row">
+    <h1 id="projectTitle">Board</h1>
+    <a href="/projects/" class="muted">← Back to Projects</a>
   </div>
 
-  <div style="width:30%;">
-    <h3>In Progress</h3>
-    <div id="inprogress"></div>
+  <hr>
+
+  <!-- 🔍 FILTER / SEARCH / SORT -->
+  <div class="row">
+    <input type="text" id="searchInput" placeholder="Search by title">
+
+    <select id="statusFilter">
+      <option value="">All</option>
+      <option value="Todo">Todo</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Done">Done</option>
+    </select>
+
+    <select id="sortSelect">
+      <option value="">Sort</option>
+      <option value="due_date">Due Date</option>
+      <option value="created_at">Created Date</option>
+    </select>
+
+    <button onclick="applyFilters()">Apply</button>
   </div>
 
-  <div style="width:30%;">
-    <h3>Done</h3>
-    <div id="done"></div>
+  <hr>
+
+  <!-- 📌 TASK CREATION FORM -->
+  <div id="taskForm" class="card" style="display:none; margin-bottom:20px;">
+
+    <input type="text" id="taskTitle" placeholder="Task Title" required>
+
+    <textarea id="taskDescription" placeholder="Task Description" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd;"></textarea>
+
+    <select id="taskStatus">
+      <option value="Todo">Todo</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Done">Done</option>
+    </select>
+
+    <select id="taskPriority">
+      <option value="">Priority</option>
+      <option value="Low">Low</option>
+      <option value="Medium">Medium</option>
+      <option value="High">High</option>
+    </select>
+
+    <input type="date" id="taskDueDate">
+
+    <div class="row" style="margin-top:10px;">
+      <button onclick="submitTask()">Save Task</button>
+      <button onclick="toggleTaskForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Floating + Task Button -->
+  <button class="primary" onclick="toggleTaskForm()">+ Task</button>
+
+  <!-- 🗂 BOARD COLUMNS -->
+  <div class="board-columns">
+
+    <div class="column">
+      <h2>Todo</h2>
+      <div id="todo" class="tasks"></div>
+    </div>
+
+    <div class="column">
+      <h2>In Progress</h2>
+      <div id="inprogress" class="tasks"></div>
+    </div>
+
+    <div class="column">
+      <h2>Done</h2>
+      <div id="done" class="tasks"></div>
+    </div>
+
   </div>
 
 </div>
