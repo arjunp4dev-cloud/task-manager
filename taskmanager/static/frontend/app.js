@@ -1,5 +1,4 @@
 const API_BASE = "https://arjundev2003.pythonanywhere.com/api";
-
 const currentPath = window.location.pathname;
 
 // ================= PROTECT ROUTES =================
@@ -63,24 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ================= BOARD PAGE INIT =================
-  if (currentPath === "/board/") {
-    const projectId = new URLSearchParams(window.location.search).get("project");
-
-    if (!projectId) {
-      window.location.href = "/projects/";
-    } else {
-      loadProjectTitle(projectId);
-      loadTasks(projectId);
-    }
-  }
-
-  // Hide form initially
-  const form = document.getElementById("taskForm");
-  if (form) {
-    form.style.display = "none";
-  }
-
 });
 
 // ================= PROJECTS =================
@@ -112,6 +93,16 @@ async function loadProjects() {
   });
 }
 
+async function deleteProject(id) {
+  await fetch(`${API_BASE}/projects/${id}/`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    }
+  });
+  loadProjects();
+}
+
 function openProject(id) {
   window.location.href = `/board/?project=${id}`;
 }
@@ -121,12 +112,21 @@ function logout() {
   window.location.href = "/login/";
 }
 
-// ================= BOARD FUNCTIONS =================
+// ================= BOARD =================
+
+if (currentPath === "/board/") {
+  const projectId = new URLSearchParams(window.location.search).get("project");
+
+  if (!projectId) {
+    window.location.href = "/projects/";
+  } else {
+    loadProjectTitle(projectId);
+    loadTasks(projectId);
+  }
+}
 
 function toggleTaskForm() {
   const form = document.getElementById("taskForm");
-  if (!form) return;
-
   form.style.display = form.style.display === "none" ? "block" : "none";
 }
 
@@ -134,11 +134,11 @@ async function submitTask() {
 
   const projectId = new URLSearchParams(window.location.search).get("project");
 
-  const title = document.getElementById("taskTitle").value.trim();
-  const description = document.getElementById("taskDescription").value.trim();
-  const status = document.getElementById("taskStatus").value; // ✅ FIXED
+  const title = document.getElementById("taskTitle").value;
+  const description = document.getElementById("taskDescription").value;
   const priority = document.getElementById("taskPriority").value;
   const due_date = document.getElementById("taskDueDate").value;
+  const status = document.getElementById("taskStatus").value;
 
   if (!title) {
     alert("Task title required");
@@ -154,18 +154,11 @@ async function submitTask() {
     body: JSON.stringify({
       title,
       description,
-      status,        // ✅ Now sending selected status
       priority,
-      due_date
+      due_date,
+      status
     })
   });
-
-  // Clear form
-  document.getElementById("taskTitle").value = "";
-  document.getElementById("taskDescription").value = "";
-  document.getElementById("taskPriority").value = "";
-  document.getElementById("taskDueDate").value = "";
-  document.getElementById("taskStatus").value = "Todo";
 
   toggleTaskForm();
   loadTasks(projectId);
@@ -192,8 +185,6 @@ async function loadTasks(projectId) {
   const inprogress = document.getElementById("inprogress");
   const done = document.getElementById("done");
 
-  if (!todo) return;
-
   todo.innerHTML = "";
   inprogress.innerHTML = "";
   done.innerHTML = "";
@@ -206,16 +197,76 @@ async function loadTasks(projectId) {
     card.innerHTML = `
       <strong>${task.title}</strong><br>
       ${task.description || ""}<br>
-      <small>Priority: ${task.priority || "None"}</small><br>
-      <small>Due: ${task.due_date || "No date"}</small>
+      Priority: ${task.priority || "None"}<br>
+      Due: ${task.due_date || "No date"}<br><br>
+
+      <select onchange="changeStatus(${task.id}, this.value)">
+        <option ${task.status === "Todo" ? "selected" : ""}>Todo</option>
+        <option ${task.status === "In Progress" ? "selected" : ""}>In Progress</option>
+        <option ${task.status === "Done" ? "selected" : ""}>Done</option>
+      </select>
+
+      <br><br>
+      <button onclick="editTask(${task.id})">Edit</button>
+      <button onclick="deleteTask(${task.id})" style="background:red;">Delete</button>
     `;
 
-    if (task.status === "Todo") {
-      todo.appendChild(card);
-    } else if (task.status === "In Progress") {
-      inprogress.appendChild(card);
-    } else if (task.status === "Done") {
-      done.appendChild(card);
+    if (task.status === "Todo") todo.appendChild(card);
+    if (task.status === "In Progress") inprogress.appendChild(card);
+    if (task.status === "Done") done.appendChild(card);
+  });
+}
+
+// ================= UPDATE STATUS =================
+async function changeStatus(taskId, newStatus) {
+
+  const projectId = new URLSearchParams(window.location.search).get("project");
+
+  await fetch(`${API_BASE}/tasks/${taskId}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    },
+    body: JSON.stringify({ status: newStatus })
+  });
+
+  loadTasks(projectId);
+}
+
+// ================= EDIT TASK =================
+async function editTask(taskId) {
+
+  const projectId = new URLSearchParams(window.location.search).get("project");
+
+  const newTitle = prompt("New Title:");
+  if (!newTitle) return;
+
+  await fetch(`${API_BASE}/tasks/${taskId}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    },
+    body: JSON.stringify({ title: newTitle })
+  });
+
+  loadTasks(projectId);
+}
+
+// ================= DELETE TASK =================
+async function deleteTask(taskId) {
+
+  const projectId = new URLSearchParams(window.location.search).get("project");
+
+  if (!confirm("Delete this task?")) return;
+
+  await fetch(`${API_BASE}/tasks/${taskId}/`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
     }
   });
+
+  loadTasks(projectId);
 }
