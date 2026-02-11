@@ -10,7 +10,7 @@ if (currentPath !== "/login/" && currentPath !== "/register/") {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // REGISTER
+  // ================= REGISTER =================
   const registerForm = document.getElementById("registerForm");
   if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // LOGIN
+  // ================= LOGIN =================
   const loginForm = document.getElementById("loginForm");
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
@@ -57,34 +57,109 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ================= PROJECTS =================
+  if (currentPath === "/projects/") {
+    loadProjects();
+
+    const createBtn = document.getElementById("createProjectBtn");
+    if (createBtn) {
+      createBtn.addEventListener("click", createProject);
+    }
+  }
+
+  // ================= BOARD =================
+  if (currentPath === "/board/") {
+    const projectId = new URLSearchParams(window.location.search).get("project");
+    if (projectId) {
+      loadProjectTitle(projectId);
+      loadTasks(projectId);
+    }
+  }
+
 });
 
-// ================= BOARD =================
+// ================= PROJECT FUNCTIONS =================
 
-if (currentPath === "/board/") {
-  const projectId = new URLSearchParams(window.location.search).get("project");
-  if (projectId) {
-    loadProjectTitle(projectId);
-    loadTasks(projectId);
-  }
+async function loadProjects() {
+  const res = await fetch(`${API_BASE}/projects/`, {
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    }
+  });
+
+  const projects = await res.json();
+  const list = document.getElementById("projectsList");
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  projects.forEach(project => {
+    list.innerHTML += `
+      <li>
+        <strong>${project.name}</strong>
+        <button onclick="openProject(${project.id})">Open</button>
+        <button onclick="deleteProject(${project.id})">Delete</button>
+      </li>
+    `;
+  });
 }
+
+async function createProject() {
+  const nameInput = document.getElementById("newProjectName");
+  const name = nameInput.value.trim();
+
+  if (!name) {
+    alert("Project name required");
+    return;
+  }
+
+  await fetch(`${API_BASE}/projects/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    },
+    body: JSON.stringify({ name })
+  });
+
+  nameInput.value = "";
+  loadProjects();
+}
+
+async function deleteProject(id) {
+  await fetch(`${API_BASE}/projects/${id}/`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    }
+  });
+
+  loadProjects();
+}
+
+function openProject(id) {
+  window.location.href = `/board/?project=${id}`;
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "/login/";
+}
+
+// ================= BOARD =================
 
 function toggleTaskForm() {
   const form = document.getElementById("taskForm");
   form.style.display = form.style.display === "none" ? "block" : "none";
 }
 
-// ================= APPLY FILTER =================
-
 function applyFilters() {
   const projectId = new URLSearchParams(window.location.search).get("project");
   loadTasks(projectId);
 }
 
-// ================= CREATE TASK =================
-
 async function submitTask() {
-
   const projectId = new URLSearchParams(window.location.search).get("project");
 
   const title = document.getElementById("taskTitle").value;
@@ -117,7 +192,16 @@ async function submitTask() {
   loadTasks(projectId);
 }
 
-// ================= LOAD TASKS WITH FILTER =================
+async function loadProjectTitle(projectId) {
+  const res = await fetch(`${API_BASE}/projects/${projectId}/`, {
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    }
+  });
+
+  const project = await res.json();
+  document.getElementById("projectTitle").innerText = project.name;
+}
 
 async function loadTasks(projectId) {
 
@@ -126,24 +210,23 @@ async function loadTasks(projectId) {
   const sortValue = document.getElementById("sortSelect")?.value || "";
 
   const res = await fetch(`${API_BASE}/projects/${projectId}/tasks/`, {
-    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    }
   });
 
   let tasks = await res.json();
 
-  // 🔎 SEARCH
   if (searchValue) {
     tasks = tasks.filter(task =>
       task.title.toLowerCase().includes(searchValue)
     );
   }
 
-  // 🎯 STATUS FILTER
   if (statusFilter) {
     tasks = tasks.filter(task => task.status === statusFilter);
   }
 
-  // 🔄 SORT
   if (sortValue) {
     tasks.sort((a, b) => {
       if (!a[sortValue]) return 1;
@@ -155,6 +238,8 @@ async function loadTasks(projectId) {
   const todo = document.getElementById("todo");
   const inprogress = document.getElementById("inprogress");
   const done = document.getElementById("done");
+
+  if (!todo) return;
 
   todo.innerHTML = "";
   inprogress.innerHTML = "";
@@ -181,20 +266,18 @@ async function loadTasks(projectId) {
   });
 }
 
-// ================= DELETE =================
-
 async function deleteTask(taskId) {
   const projectId = new URLSearchParams(window.location.search).get("project");
 
   await fetch(`${API_BASE}/tasks/${taskId}/`, {
     method: "DELETE",
-    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("access")
+    }
   });
 
   loadTasks(projectId);
 }
-
-// ================= EDIT =================
 
 async function editTask(taskId) {
 
@@ -215,13 +298,4 @@ async function editTask(taskId) {
 
   const projectId = new URLSearchParams(window.location.search).get("project");
   loadTasks(projectId);
-}
-
-async function loadProjectTitle(projectId) {
-  const res = await fetch(`${API_BASE}/projects/${projectId}/`, {
-    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
-  });
-
-  const project = await res.json();
-  document.getElementById("projectTitle").innerText = project.name;
 }
