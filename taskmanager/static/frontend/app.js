@@ -301,35 +301,45 @@ async function editTask(taskId) {
   const newStatusInput = prompt("Status (Todo / In Progress / Done):");
   if (newStatusInput === null) return;
 
-  let newStatus = newStatusInput.trim().toLowerCase();
+  const allowedStatuses = ["Todo", "In Progress", "Done"];
 
-  if (newStatus === "todo") newStatus = "Todo";
-  else if (newStatus === "in progress") newStatus = "In Progress";
-  else if (newStatus === "done") newStatus = "Done";
-  else {
-    alert("Invalid status. Use: Todo / In Progress / Done");
+  let newStatus = allowedStatuses.find(
+    s => s.toLowerCase() === newStatusInput.trim().toLowerCase()
+  );
+
+  if (!newStatus) {
+    alert("Invalid status. Use exactly: Todo / In Progress / Done");
     return;
   }
 
   const newPriorityInput = prompt("Priority (Low / Medium / High or leave empty):");
   if (newPriorityInput === null) return;
 
-  let newPriority = newPriorityInput.trim();
-  if (newPriority === "") newPriority = null;
+  const allowedPriorities = ["Low", "Medium", "High"];
+
+  let newPriority = null;
+  if (newPriorityInput.trim() !== "") {
+    newPriority = allowedPriorities.find(
+      p => p.toLowerCase() === newPriorityInput.trim().toLowerCase()
+    );
+    if (!newPriority) {
+      alert("Invalid priority. Use: Low / Medium / High");
+      return;
+    }
+  }
 
   const newDueDate = prompt("Due Date (YYYY-MM-DD or leave empty):");
-  // 🚨 Prevent past dates
-if (newDueDate) {
-  const today = new Date().toISOString().split("T")[0];
-  if (newDueDate < today) {
-    alert("Due date cannot be in the past!");
-    return;
-  }
-}
-
   if (newDueDate === null) return;
 
-  await fetch(`${API_BASE}/tasks/${taskId}/`, {
+  if (newDueDate) {
+    const today = new Date().toISOString().split("T")[0];
+    if (newDueDate < today) {
+      alert("Due date cannot be in the past!");
+      return;
+    }
+  }
+
+  const res = await fetch(`${API_BASE}/tasks/${taskId}/`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -343,6 +353,12 @@ if (newDueDate) {
       due_date: newDueDate || null
     })
   });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert(JSON.stringify(err));
+    return;
+  }
 
   loadTasks(projectId);
 }
