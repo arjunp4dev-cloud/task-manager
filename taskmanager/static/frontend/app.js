@@ -1,13 +1,9 @@
 const API_BASE = "https://arjundev2003.pythonanywhere.com/api";
 
-// ================= CURRENT PAGE =================
 const currentPath = window.location.pathname;
 
 // ================= PROTECT ROUTES =================
-if (
-  currentPath !== "/login/" &&
-  currentPath !== "/register/"
-) {
+if (currentPath !== "/login/" && currentPath !== "/register/") {
   if (!localStorage.getItem("access")) {
     window.location.href = "/login/";
   }
@@ -15,9 +11,8 @@ if (
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ================= REGISTER =================
+  // REGISTER
   const registerForm = document.getElementById("registerForm");
-
   if (registerForm) {
     registerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -36,15 +31,13 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Registration successful!");
         window.location.href = "/login/";
       } else {
-        const data = await res.json();
-        alert(JSON.stringify(data));
+        alert("Registration failed");
       }
     });
   }
 
-  // ================= LOGIN =================
+  // LOGIN
   const loginForm = document.getElementById("loginForm");
-
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -65,74 +58,40 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("refresh", data.refresh);
         window.location.href = "/projects/";
       } else {
-        alert("Invalid username or password");
+        alert("Invalid credentials");
       }
     });
   }
 
 });
 
-// ================= PROJECTS PAGE =================
+// ================= PROJECTS =================
+
 if (currentPath === "/projects/") {
   loadProjects();
-
-  const createBtn = document.getElementById("createProjectBtn");
-  if (createBtn) {
-    createBtn.addEventListener("click", createProject);
-  }
 }
 
 async function loadProjects() {
-  const token = localStorage.getItem("access");
-
   const res = await fetch(`${API_BASE}/projects/`, {
-    headers: { "Authorization": "Bearer " + token }
-  });
-
-  const projects = await res.json();
-  const projectsList = document.getElementById("projectsList");
-  projectsList.innerHTML = "";
-
-  projects.forEach(project => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${project.name}</strong>
-      <button onclick="openProject(${project.id})">Open</button>
-      <button onclick="deleteProject(${project.id})">Delete</button>
-    `;
-    projectsList.appendChild(li);
-  });
-}
-
-async function createProject() {
-  const nameInput = document.getElementById("newProjectName");
-  const name = nameInput.value.trim();
-
-  if (!name) {
-    alert("Project name required");
-    return;
-  }
-
-  await fetch(`${API_BASE}/projects/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    },
-    body: JSON.stringify({ name })
-  });
-
-  nameInput.value = "";
-  loadProjects();
-}
-
-async function deleteProject(id) {
-  await fetch(`${API_BASE}/projects/${id}/`, {
-    method: "DELETE",
     headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
   });
 
-  loadProjects();
+  const projects = await res.json();
+  const list = document.getElementById("projectsList");
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  projects.forEach(project => {
+    list.innerHTML += `
+      <li>
+        <strong>${project.name}</strong>
+        <button onclick="openProject(${project.id})">Open</button>
+        <button onclick="deleteProject(${project.id})">Delete</button>
+      </li>
+    `;
+  });
 }
 
 function openProject(id) {
@@ -140,16 +99,15 @@ function openProject(id) {
 }
 
 function logout() {
-  localStorage.removeItem("access");
-  localStorage.removeItem("refresh");
+  localStorage.clear();
   window.location.href = "/login/";
 }
 
-// ================= BOARD PAGE =================
+// ================= BOARD =================
+
 if (currentPath === "/board/") {
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const projectId = urlParams.get("project");
+  const projectId = new URLSearchParams(window.location.search).get("project");
 
   if (!projectId) {
     window.location.href = "/projects/";
@@ -159,77 +117,6 @@ if (currentPath === "/board/") {
   }
 }
 
-async function loadProjectTitle(projectId) {
-  const res = await fetch(`${API_BASE}/projects/${projectId}/`, {
-    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
-  });
-
-  const project = await res.json();
-  document.getElementById("projectTitle").innerText = project.name;
-}
-
-// ================= FILTER APPLY =================
-function applyFilters() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const projectId = urlParams.get("project");
-  loadTasks(projectId);
-}
-
-// ================= LOAD TASKS =================
-async function loadTasks(projectId) {
-
-  const search = document.getElementById("searchInput")?.value || "";
-  const status = document.getElementById("statusFilter")?.value || "";
-  const sort = document.getElementById("sortSelect")?.value || "";
-
-  let url = `${API_BASE}/projects/${projectId}/tasks/?`;
-
-  if (search) url += `search=${search}&`;
-  if (status) url += `status=${status}&`;
-  if (sort) url += `sort=${sort}&`;
-
-  const res = await fetch(url, {
-    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
-  });
-
-  const tasks = await res.json();
-
-  const todo = document.getElementById("todo");
-  const inprogress = document.getElementById("inprogress");
-  const done = document.getElementById("done");
-
-  todo.innerHTML = "";
-  inprogress.innerHTML = "";
-  done.innerHTML = "";
-
-  tasks.forEach(task => {
-
-    const div = document.createElement("div");
-    div.style.border = "1px solid #ccc";
-    div.style.padding = "10px";
-    div.style.marginBottom = "10px";
-
-    div.innerHTML = `
-      <strong>${task.title}</strong><br>
-      ${task.description || ""}<br>
-      Priority: ${task.priority || "-"}<br>
-      Due: ${task.due_date || "-"}<br><br>
-
-      <select onchange="updateStatus(${task.id}, this.value)">
-        <option value="Todo" ${task.status === "Todo" ? "selected" : ""}>Todo</option>
-        <option value="In Progress" ${task.status === "In Progress" ? "selected" : ""}>In Progress</option>
-        <option value="Done" ${task.status === "Done" ? "selected" : ""}>Done</option>
-      </select>
-    `;
-
-    if (task.status === "Todo") todo.appendChild(div);
-    if (task.status === "In Progress") inprogress.appendChild(div);
-    if (task.status === "Done") done.appendChild(div);
-
-  });
-}
-
-// ================= TASK FORM =================
 function toggleTaskForm() {
   const form = document.getElementById("taskForm");
   form.style.display = form.style.display === "none" ? "block" : "none";
@@ -237,8 +124,7 @@ function toggleTaskForm() {
 
 async function submitTask() {
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const projectId = urlParams.get("project");
+  const projectId = new URLSearchParams(window.location.search).get("project");
 
   const title = document.getElementById("taskTitle").value;
   const description = document.getElementById("taskDescription").value;
@@ -265,24 +151,51 @@ async function submitTask() {
     })
   });
 
-  document.getElementById("taskForm").style.display = "none";
+  toggleTaskForm();
   loadTasks(projectId);
 }
 
-// ================= UPDATE STATUS =================
-async function updateStatus(taskId, newStatus) {
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const projectId = urlParams.get("project");
-
-  await fetch(`${API_BASE}/projects/${projectId}/tasks/${taskId}/`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + localStorage.getItem("access")
-    },
-    body: JSON.stringify({ status: newStatus })
+async function loadProjectTitle(projectId) {
+  const res = await fetch(`${API_BASE}/projects/${projectId}/`, {
+    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
   });
 
-  loadTasks(projectId);
+  const project = await res.json();
+  document.getElementById("projectTitle").innerText = project.name;
+}
+
+async function loadTasks(projectId) {
+
+  const res = await fetch(`${API_BASE}/projects/${projectId}/tasks/`, {
+    headers: { "Authorization": "Bearer " + localStorage.getItem("access") }
+  });
+
+  const tasks = await res.json();
+
+  const todo = document.getElementById("todo");
+  const inprogress = document.getElementById("inprogress");
+  const done = document.getElementById("done");
+
+  todo.innerHTML = "";
+  inprogress.innerHTML = "";
+  done.innerHTML = "";
+
+  tasks.forEach(task => {
+
+    const card = document.createElement("div");
+    card.style.border = "1px solid #ccc";
+    card.style.padding = "10px";
+    card.style.marginBottom = "10px";
+
+    card.innerHTML = `
+      <strong>${task.title}</strong><br>
+      ${task.description || ""}<br>
+      Priority: ${task.priority || "None"}<br>
+      Due: ${task.due_date || "No date"}
+    `;
+
+    if (task.status === "Todo") todo.appendChild(card);
+    if (task.status === "In Progress") inprogress.appendChild(card);
+    if (task.status === "Done") done.appendChild(card);
+  });
 }
