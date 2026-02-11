@@ -8,7 +8,7 @@ def home(request):
 
 
 urlpatterns = [
-    path("", home),
+    path("", home),  # Root shows login page
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
 ]
